@@ -1,37 +1,15 @@
 import SwiftUI
 import ComposableArchitecture
+import CharactersListFeature
 
-@Reducer
-public struct RootFeature {
+public struct RootView: View {
     public init() {}
 
-    @ObservableState
-    public struct State: Equatable {
-        public init() {}
-    }
-    public enum Action {}
-    public var body: some ReducerOf<Self> {
-        EmptyReducer()
-    }
-}
-public struct RootView: View {
-    @Bindable var store: StoreOf<RootFeature>
-    
-    public init() {
-        self.store = Store(initialState: RootFeature.State()) {
-            RootFeature()
-        }
-    }
-    
-    public init(store: StoreOf<RootFeature>) {
-        self.store = store
-    }
     public var body: some View {
-        Text("View")
+        CharactersListView(
+            store: Store(initialState: CharactersList.State()) {
+                CharactersList()
+            }
+        )
     }
-}
-#Preview {
-    RootView(store: Store(initialState: RootFeature.State()) {
-        RootFeature()
-    })
 }

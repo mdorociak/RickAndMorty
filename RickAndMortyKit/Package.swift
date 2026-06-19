@@ -30,6 +30,7 @@ let package = Package(
             name: "Root",
             dependencies: [
                 "Models",
+                "CharactersListFeature",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ],
             swiftSettings: [
@@ -46,6 +47,18 @@ let package = Package(
                 .defaultIsolation(nil)
             ]
         ),
+        .target(
+            name: "CharactersListFeature",
+            dependencies: [
+                "Models",
+                "Networking",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ],
+            swiftSettings: [
+                .defaultIsolation(nil)
+            ]
+        ),
+
         .testTarget(
             name: "RootTests",
             dependencies: ["Root"],
