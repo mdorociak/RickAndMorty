@@ -12,31 +12,40 @@ public struct CharactersListView: View {
     }
     
     public var body: some View {
-        Group {
-            switch store.loadingState {
-            case .idle, .loading:
-                ProgressView("Loading characters")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .loaded:
-                List(store.characters) { character in
-                    CharacterRow(character: character)
+        NavigationStack {
+            Group {
+                switch store.loadingState {
+                case .idle, .loading:
+                    ProgressView("Loading characters")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .loaded:
+                    List(store.characters) { character in
+                        CharacterRow(character: character)
+                            .onAppear {
+                                if character.id == store.characters.last?.id {
+                                    store.send(.reachedBottom)
+                                }
+                            }
+                    }
+                case .empty:
+                    ContentUnavailableView(
+                        "Characters not found",
+                        systemImage: "person.slash",
+                        description: Text("Try a different search.")
+                    )
+                case .failed(let message):
+                    ContentUnavailableView(
+                        "Something went wrong",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(message)
+                    )
                 }
-            case .empty:
-                ContentUnavailableView(
-                    "Characters not found",
-                    systemImage: "person.slash",
-                    description: Text("Try a different search.")
-                )
-            case .failed(let message):
-                ContentUnavailableView(
-                    "Something went wrong",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text(message)
-                )
             }
-        }
-        .task {
-            store.send(.onAppear)
+            .navigationTitle("Characters")
+            .searchable(text: $store.searchText)
+            .task {
+                store.send(.onAppear)
+            }
         }
     }
 }
