@@ -15,20 +15,20 @@ public struct CharactersList: Sendable {
         var loadingState: LoadingState = .idle
         
         var currentPage = 1
-        var totalPages = 1
+        var hasMorePages = false
         
         public init() {}
     }
     
     public enum Action: BindableAction {
         case onAppear
-        case reachedBottom
+        case scrolledToIndex(Int)
         case binding(BindingAction<State>)
         case charactersResponse(Result<CharactersPage, Error>)
         case nextPageResponse(Result<CharactersPage, Error>)
     }
     
-    private enum CancelID { case search }
+    private enum CancelID { case search, nextPage }
     
     @Dependency(\.apiClient) var apiClient
     @Dependency(\.continuousClock) var clock
@@ -55,24 +55,29 @@ public struct CharactersList: Sendable {
                         )
                     )
                 }
-            case .reachedBottom:
-                guard !state.isLoadingNextPage, state.currentPage < state.totalPages else {
+            case let .scrolledToIndex(index):
+                guard state.hasMorePages,
+                      !state.isLoadingNextPage,
+                      index >= state.characters.count - 5
+                else {
                     return .none
                 }
                 state.isLoadingNextPage = true
-                let targetPage = state.currentPage + 1
+                let page = state.currentPage + 1
                 let query = state.searchText
                 return .run { send in
                     await send(
                         .nextPageResponse(
                             Result {
-                                try await apiClient.characters(page: targetPage, name: query.isEmpty ? nil : query)
+                                try await apiClient.characters(page: page, name: query.isEmpty ? nil : query)
                             }
                         )
                     )
                 }
+                .cancellable(id: CancelID.nextPage)
             
             case .binding(\.searchText):
+                state.isLoadingNextPage = false
                 let query = state.searchText
                 return .run { send in
                     try await clock.sleep(for: .milliseconds(300))
@@ -83,6 +88,7 @@ public struct CharactersList: Sendable {
                     )
                 }
                 .cancellable(id: CancelID.search, cancelInFlight: true)
+                .merge(with: .cancel(id: CancelID.nextPage))
             
             case .binding:
                 return .none
@@ -90,7 +96,7 @@ public struct CharactersList: Sendable {
             case let .charactersResponse(.success(page)):
                 state.characters = IdentifiedArrayOf(uniqueElements: page.results)
                 state.currentPage = 1
-                state.totalPages = page.info.pages
+                state.hasMorePages = page.info.next != nil
                 
                 if page.results.isEmpty {
                     state.loadingState = .empty
@@ -106,7 +112,7 @@ public struct CharactersList: Sendable {
             case let .nextPageResponse(.success(page)):
                 state.characters.append(contentsOf: page.results)
                 state.currentPage += 1
-                
+                state.hasMorePages = page.info.next != nil
                 state.isLoadingNextPage = false
                 return .none
             

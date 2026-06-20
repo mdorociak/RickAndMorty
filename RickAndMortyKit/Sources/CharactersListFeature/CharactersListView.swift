@@ -19,13 +19,13 @@ public struct CharactersListView: View {
                     ProgressView("Loading characters")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .loaded:
-                    List(store.characters) { character in
-                        CharacterRow(character: character)
-                            .onAppear {
-                                if character.id == store.characters.last?.id {
-                                    store.send(.reachedBottom)
+                    List {
+                        ForEach(Array(store.characters.enumerated()), id: \.element.id) { index, character in
+                            CharacterRow(character: character)
+                                .onAppear {
+                                        store.send(.scrolledToIndex(index))
                                 }
-                            }
+                        }
                     }
                 case .empty:
                     ContentUnavailableView(
