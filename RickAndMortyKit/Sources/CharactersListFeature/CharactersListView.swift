@@ -35,6 +35,9 @@ public struct CharactersListView: View {
                             }
                         }
                     }
+                    .refreshable{
+                        await store.send(.refresh).finish()
+                    }
                 case .empty:
                     ContentUnavailableView(
                         "Characters not found",

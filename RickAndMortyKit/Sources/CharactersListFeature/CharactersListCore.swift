@@ -18,19 +18,21 @@ public struct CharactersList: Sendable {
     @ObservableState
     public struct State: Equatable {
         var characters: IdentifiedArrayOf<Character> = []
-        public var searchText = ""
         var path = StackState<Path.State>()
-        var isLoadingNextPage = false
         var loadingState: LoadingState = .idle
+        
+        public var searchText = ""
         
         var currentPage = 1
         var hasMorePages = false
+        var isLoadingNextPage = false
         
         public init() {}
     }
     
     public enum Action: BindableAction {
         case onAppear
+        case refresh
         case scrolledToIndex(Int)
         case binding(BindingAction<State>)
         case charactersResponse(Result<CharactersPage, Error>)
@@ -67,6 +69,20 @@ public struct CharactersList: Sendable {
                         )
                     )
                 }
+            case .refresh:
+                state.isLoadingNextPage = false
+                let query = state.searchText
+                return .run { send in
+                    await send(
+                        .charactersResponse(
+                            Result {
+                                try await apiClient.characters(page: 1, name: query.isEmpty ? nil : query)
+                            }
+                        )
+                    )
+                }
+                .merge(with: .cancel(id: CancelID.nextPage))
+                
             case let .scrolledToIndex(index):
                 guard state.hasMorePages,
                       !state.isLoadingNextPage,
