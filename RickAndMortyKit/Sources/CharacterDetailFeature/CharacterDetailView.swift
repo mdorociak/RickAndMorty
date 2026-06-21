@@ -41,7 +41,12 @@ public struct CharacterDetailsView: View {
 
                     case .loaded:
                         ForEach(store.episodes) { episode in
-                            EpisodeRow(episode: episode)
+                            Button {
+                                store.send(.episodeTapped(episode))
+                            } label: {
+                                EpisodeRow(episode: episode)
+                            }
+                            .buttonStyle(.plain)
                         }
 
                     case .empty:

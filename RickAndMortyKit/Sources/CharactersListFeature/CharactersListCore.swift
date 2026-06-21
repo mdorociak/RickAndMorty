@@ -5,10 +5,12 @@ import Models
 import SharedUI
 import Networking
 import CharacterDetailFeature
+import EpisodeDetailFeature
 
 @Reducer
 public enum Path {
     case characterDetail(CharacterDetail)
+    case episodeDetail(EpisodeDetail)
 }
 
 @Reducer
@@ -106,9 +108,6 @@ public struct CharactersList: Sendable {
             case let .characterTapped(character):
                 state.path.append(.characterDetail(CharacterDetail.State(character: character)))
                 return .none
-
-            case .path:
-                return .none
                 
             case let .charactersResponse(.success(page)):
                 state.characters = IdentifiedArrayOf(uniqueElements: page.results)
@@ -135,6 +134,13 @@ public struct CharactersList: Sendable {
             
             case .nextPageResponse(.failure):
                 state.isLoadingNextPage = false
+                return .none
+            
+            case let .path(.element(id: _, action: .characterDetail(.delegate(.openEpisode(episode))))):
+                state.path.append(.episodeDetail(EpisodeDetail.State(episode: episode)))
+                return .none
+                
+            case .path:
                 return .none
             }
         }

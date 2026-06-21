@@ -64,6 +64,7 @@ let package = Package(
                 "SharedUI",
                 "Networking",
                 "CharacterDetailFeature",
+                "EpisodeDetailFeature",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ],
             swiftSettings: [

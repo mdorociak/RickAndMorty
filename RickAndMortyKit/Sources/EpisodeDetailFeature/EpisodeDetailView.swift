@@ -3,7 +3,7 @@ import ComposableArchitecture
 import SwiftUI
 import Models
 
-public struct EpisodeDetailsView: View {
+public struct EpisodeDetailView: View {
     @Bindable var store: StoreOf<EpisodeDetail>
 
     public init(store: StoreOf<EpisodeDetail>) {
@@ -54,7 +54,7 @@ struct EpisodeCharacterRow: View {
             } placeholder: {
                 ProgressView()
             }
-            .frame(width: 72, height: 72)
+            .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
             Text(character.name)

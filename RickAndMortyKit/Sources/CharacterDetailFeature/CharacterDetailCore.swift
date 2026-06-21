@@ -22,6 +22,12 @@ public struct CharacterDetail: Sendable {
     public enum Action {
         case onAppear
         case episodesResponse(Result<[Episode], Error>)
+        case episodeTapped(Episode)
+        case delegate(Delegate)
+        
+        public enum Delegate {
+            case openEpisode(Episode)
+        }
     }
     
     @Dependency(\.apiClient) var apiClient
@@ -57,6 +63,13 @@ public struct CharacterDetail: Sendable {
             
             case let .episodesResponse(.failure(error)):
                 state.episodesState = .failed(error.localizedDescription)
+                return .none
+            
+            case let .episodeTapped(episode):
+                return .send(
+                    .delegate(.openEpisode(episode))
+                )
+            case .delegate:
                 return .none
             }
         }

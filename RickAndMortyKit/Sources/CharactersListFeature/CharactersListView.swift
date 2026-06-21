@@ -4,6 +4,7 @@ import SwiftUI
 import Models
 import SharedUI
 import CharacterDetailFeature
+import EpisodeDetailFeature
 
 @MainActor
 public struct CharactersListView: View {
@@ -58,6 +59,8 @@ public struct CharactersListView: View {
             switch store.case {
             case let .characterDetail(store):
                 CharacterDetailsView(store: store)
+            case let .episodeDetail(store):
+                EpisodeDetailView(store: store)
             }
         }
     }
