@@ -4,6 +4,7 @@ enum Endpoint {
     case characters(page: Int, name: String?)
     case episode(id: Int)
     case episodes(ids: [Int])
+    case charactersByIDs(ids: [Int])
 
     private static let baseURL = "https://rickandmortyapi.com/api"
 
@@ -32,8 +33,11 @@ enum Endpoint {
         case let .episodes(ids):
             let idsPath = ids.map(String.init).joined(separator: ",")
             components.path += "/episode/\(idsPath)"
+        
+        case let .charactersByIDs(ids):
+            let idsPath = ids.map(String.init).joined(separator: ",")
+            components.path += "/character/\(idsPath)"
         }
-
         return components.url
     }
 }

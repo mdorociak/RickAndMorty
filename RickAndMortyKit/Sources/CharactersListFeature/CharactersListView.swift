@@ -2,6 +2,8 @@
 import ComposableArchitecture
 import SwiftUI
 import Models
+import SharedUI
+import CharacterDetailFeature
 
 @MainActor
 public struct CharactersListView: View {
@@ -12,7 +14,7 @@ public struct CharactersListView: View {
     }
     
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             Group {
                 switch store.loadingState {
                 case .idle, .loading:
@@ -21,10 +23,15 @@ public struct CharactersListView: View {
                 case .loaded:
                     List {
                         ForEach(Array(store.characters.enumerated()), id: \.element.id) { index, character in
-                            CharacterRow(character: character)
-                                .onAppear {
+                            Button {
+                                store.send(.characterTapped(character))
+                            } label: {
+                                CharacterRow(character: character)
+                            }
+                            .buttonStyle(.plain)
+                            .onAppear {
                                         store.send(.scrolledToIndex(index))
-                                }
+                            }
                         }
                     }
                 case .empty:
@@ -45,6 +52,12 @@ public struct CharactersListView: View {
             .searchable(text: $store.searchText)
             .task {
                 store.send(.onAppear)
+            }
+        }
+        destination: { store in
+            switch store.case {
+            case let .characterDetail(store):
+                CharacterDetailsView(store: store)
             }
         }
     }
@@ -75,7 +88,7 @@ struct CharacterRow: View {
 
                 HStack(spacing: 6) {
                     Circle()
-                        .fill(statusColor)
+                        .fill(character.status.color)
                         .frame(width: 10, height: 10)
 
                     Text(character.status.rawValue)
@@ -86,17 +99,6 @@ struct CharacterRow: View {
             Spacer()
         }
         .padding(.vertical, 4)
-    }
-
-    private var statusColor: Color {
-        switch character.status {
-        case .alive:
-            return .green
-        case .dead:
-            return .red
-        case .unknown:
-            return .gray
-        }
     }
 }
 

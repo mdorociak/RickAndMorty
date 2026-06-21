@@ -2,7 +2,14 @@
 import ComposableArchitecture
 import SwiftUI
 import Models
+import SharedUI
 import Networking
+import CharacterDetailFeature
+
+@Reducer
+public enum Path {
+    case characterDetail(CharacterDetail)
+}
 
 @Reducer
 public struct CharactersList: Sendable {
@@ -10,7 +17,7 @@ public struct CharactersList: Sendable {
     public struct State: Equatable {
         var characters: IdentifiedArrayOf<Character> = []
         public var searchText = ""
-        
+        var path = StackState<Path.State>()
         var isLoadingNextPage = false
         var loadingState: LoadingState = .idle
         
@@ -26,6 +33,9 @@ public struct CharactersList: Sendable {
         case binding(BindingAction<State>)
         case charactersResponse(Result<CharactersPage, Error>)
         case nextPageResponse(Result<CharactersPage, Error>)
+        
+        case path(StackActionOf<Path>)
+        case characterTapped(Character)
     }
     
     private enum CancelID { case search, nextPage }
@@ -93,6 +103,13 @@ public struct CharactersList: Sendable {
             case .binding:
                 return .none
                 
+            case let .characterTapped(character):
+                state.path.append(.characterDetail(CharacterDetail.State(character: character)))
+                return .none
+
+            case .path:
+                return .none
+                
             case let .charactersResponse(.success(page)):
                 state.characters = IdentifiedArrayOf(uniqueElements: page.results)
                 state.currentPage = 1
@@ -121,13 +138,8 @@ public struct CharactersList: Sendable {
                 return .none
             }
         }
+        .forEach(\.path, action: \.path)
     }
 }
 
-enum LoadingState: Equatable {
-    case idle
-    case loading
-    case loaded
-    case empty
-    case failed(String)
-}
+extension Path.State: Equatable {}

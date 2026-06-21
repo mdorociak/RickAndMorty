@@ -24,6 +24,7 @@ public struct APIClient: Sendable {
     public var characters: @Sendable (_ page: Int, _ name: String?) async throws -> CharactersPage
     public var episode: @Sendable (_ id: Int) async throws -> Episode
     public var episodes: @Sendable (_ ids: [Int]) async throws -> [Episode]
+    public var charactersByIDs: @Sendable (_ ids: [Int]) async throws -> [Character]
 }
 
 
@@ -39,13 +40,22 @@ extension APIClient: DependencyKey {
             try await fetch(
                 .episode(id: id),
                 as: Episode.self)
-        }, episodes: { ids in
+        },
+        episodes: { ids in
             guard !ids.isEmpty else { return [] }
             if ids.count == 1, let id = ids.first {
                 let episode = try await fetch(.episode(id: id), as: Episode.self)
                 return [episode]
             }
             return try await fetch(.episodes(ids: ids), as: [Episode].self)
+        },
+        charactersByIDs: { ids in
+            guard !ids.isEmpty else { return [] }
+            if ids.count == 1, let id = ids.first {
+                let character = try await fetch(.charactersByIDs(ids: [id]), as: Character.self)
+                return [character]
+            }
+            return try await fetch(.charactersByIDs(ids: ids), as: [Character].self)
         }
     )
 }

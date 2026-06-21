@@ -27,9 +27,19 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SharedUI",
+            dependencies: [
+                "Models"
+            ],
+            swiftSettings: [
+                .defaultIsolation(nil)
+            ]
+        ),
+        .target(
             name: "Root",
             dependencies: [
                 "Models",
+                "SharedUI",
                 "CharactersListFeature",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ],
@@ -51,6 +61,32 @@ let package = Package(
             name: "CharactersListFeature",
             dependencies: [
                 "Models",
+                "SharedUI",
+                "Networking",
+                "CharacterDetailFeature",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ],
+            swiftSettings: [
+                .defaultIsolation(nil)
+            ]
+        ),
+        .target(
+            name: "CharacterDetailFeature",
+            dependencies: [
+                "Models",
+                "SharedUI",
+                "Networking",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ],
+            swiftSettings: [
+                .defaultIsolation(nil)
+            ]
+        ),
+        .target(
+            name: "EpisodeDetailFeature",
+            dependencies: [
+                "Models",
+                "SharedUI",
                 "Networking",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ],
