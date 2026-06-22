@@ -16,6 +16,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		2A87E4372FE9B36700DA63BF /* Screenshots */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Screenshots;
+			sourceTree = "<group>";
+		};
 		2A8C24B02FE455F400F05CB6 /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
@@ -38,6 +43,7 @@
 		2A8C24A52FE455F400F05CB6 = {
 			isa = PBXGroup;
 			children = (
+				2A87E4372FE9B36700DA63BF /* Screenshots */,
 				2A8C24BC2FE456CB00F05CB6 /* RickAndMortyKit */,
 				2A8C24B02FE455F400F05CB6 /* App */,
 				2A8C24BD2FE4655800F05CB6 /* Frameworks */,
@@ -76,6 +82,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				2A87E4372FE9B36700DA63BF /* Screenshots */,
 				2A8C24B02FE455F400F05CB6 /* App */,
 			);
 			name = RickAndMorty;

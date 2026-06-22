@@ -15,7 +15,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.26.0")
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.26.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -108,7 +109,8 @@ let package = Package(
             name: "CharactersListFeatureTests",
             dependencies: [
                 "CharactersListFeature",
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
             ],
             swiftSettings: [
                 .defaultIsolation(nil)
@@ -118,7 +120,8 @@ let package = Package(
             name: "CharacterDetailFeatureTests",
             dependencies: [
                 "CharacterDetailFeature",
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
             ],
             swiftSettings: [
                 .defaultIsolation(nil)
