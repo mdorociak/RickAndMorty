@@ -23,15 +23,19 @@ public struct CharactersListView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .loaded:
                     List {
-                        ForEach(Array(store.characters.enumerated()), id: \.element.id) { index, character in
-                            Button {
-                                store.send(.characterTapped(character))
-                            } label: {
-                                CharacterRow(character: character)
+                        if !store.favoriteCharacters.isEmpty {
+                            Section("Favorites") {
+                                ForEach(store.favoriteCharacters) { character in
+                                    characterRow(character)
+                                }
                             }
-                            .buttonStyle(.plain)
-                            .onAppear {
-                                        store.send(.scrolledToIndex(index))
+                        }
+                        Section("All Characters") {
+                            ForEach(store.otherCharacters) { character in
+                                characterRow(character)
+                                    .onAppear {
+                                        store.send(.characterAppeared(character.id))
+                                    }
                             }
                         }
                     }
@@ -66,6 +70,27 @@ public struct CharactersListView: View {
                 EpisodeDetailView(store: store)
             }
         }
+    }
+    
+    @ViewBuilder
+    private func characterRow(_ character: Character) -> some View {
+        Button {
+            store.send(.characterTapped(character))
+        } label: {
+            HStack {
+                CharacterRow(character: character)
+                Spacer()
+                Button {
+                    store.send(.favoriteToggled(character))
+                } label: {
+                    Image(systemName: store.favoriteIDs.contains(character.id) ? "heart.fill" : "heart")
+                        .foregroundStyle(store.favoriteIDs.contains(character.id) ? .red : .secondary)
+                }
+                .buttonStyle(.borderless)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

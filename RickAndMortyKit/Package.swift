@@ -29,7 +29,8 @@ let package = Package(
         .target(
             name: "SharedUI",
             dependencies: [
-                "Models"
+                "Models",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
             ],
             swiftSettings: [
                 .defaultIsolation(nil)
@@ -99,6 +100,26 @@ let package = Package(
         .testTarget(
             name: "RootTests",
             dependencies: ["Root"],
+            swiftSettings: [
+                .defaultIsolation(nil)
+            ]
+        ),
+        .testTarget(
+            name: "CharactersListFeatureTests",
+            dependencies: [
+                "CharactersListFeature",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ],
+            swiftSettings: [
+                .defaultIsolation(nil)
+            ]
+        ),
+        .testTarget(
+            name: "CharacterDetailFeatureTests",
+            dependencies: [
+                "CharacterDetailFeature",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ],
             swiftSettings: [
                 .defaultIsolation(nil)
             ]

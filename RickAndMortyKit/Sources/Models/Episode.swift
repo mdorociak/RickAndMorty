@@ -26,4 +26,18 @@ public struct Episode: Decodable, Equatable, Identifiable, Sendable {
         let urlStrings = try container.decode([String].self, forKey: .characterIDs)
         self.characterIDs = urlStrings.parsedIDs()
     }
+    
+    public init(
+        id: Int,
+        name: String,
+        airDate: String,
+        episodeCode: String,
+        characterIDs: [Int]
+    ) {
+        self.id = id
+        self.name = name
+        self.airDate = airDate
+        self.episodeCode = episodeCode
+        self.characterIDs = characterIDs
+    }
 }

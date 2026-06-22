@@ -37,6 +37,30 @@ public struct Character: Decodable, Sendable, Identifiable, Equatable {
         let urlStrings = try container.decode([String].self, forKey: .episodeIDs)
         self.episodeIDs = urlStrings.parsedIDs()
     }
+    
+    public init(
+        id: Int,
+        name: String,
+        status: Status,
+        species: String,
+        type: String,
+        gender: Gender,
+        origin: Location,
+        location: Location,
+        imageURL: URL,
+        episodeIDs: [Int]
+    ) {
+        self.id = id
+        self.name = name
+        self.status = status
+        self.species = species
+        self.type = type
+        self.gender = gender
+        self.origin = origin
+        self.location = location
+        self.imageURL = imageURL
+        self.episodeIDs = episodeIDs
+    }
 }
 
 public struct Location: Decodable, Equatable, Sendable {
@@ -45,6 +69,11 @@ public struct Location: Decodable, Equatable, Sendable {
     
     public var url: URL? {
         URL(string: urlString)
+    }
+    
+    public init(name: String, urlString: String) {
+        self.name = name
+        self.urlString = urlString
     }
     
     private enum CodingKeys: String, CodingKey {

@@ -18,10 +18,18 @@ public struct CharactersList: Sendable {
     @ObservableState
     public struct State: Equatable {
         var characters: IdentifiedArrayOf<Character> = []
+        var favoriteCharacters: IdentifiedArrayOf<Character> {
+            characters.filter { favoriteIDs.contains($0.id) }
+        }
+        var otherCharacters: IdentifiedArrayOf<Character> {
+            characters.filter { !favoriteIDs.contains($0.id) }
+        }
+       
         var path = StackState<Path.State>()
         var loadingState: LoadingState = .idle
         
         public var searchText = ""
+        @Shared(.favoriteIDs) var favoriteIDs: Set<Int>
         
         var currentPage = 1
         var hasMorePages = false
@@ -33,13 +41,14 @@ public struct CharactersList: Sendable {
     public enum Action: BindableAction {
         case onAppear
         case refresh
-        case scrolledToIndex(Int)
+        case characterAppeared(Character.ID)
         case binding(BindingAction<State>)
         case charactersResponse(Result<CharactersPage, Error>)
         case nextPageResponse(Result<CharactersPage, Error>)
         
         case path(StackActionOf<Path>)
         case characterTapped(Character)
+        case favoriteToggled(Character)
     }
     
     private enum CancelID { case search, nextPage }
@@ -83,9 +92,10 @@ public struct CharactersList: Sendable {
                 }
                 .merge(with: .cancel(id: CancelID.nextPage))
                 
-            case let .scrolledToIndex(index):
+            case let .characterAppeared(id):
                 guard state.hasMorePages,
                       !state.isLoadingNextPage,
+                      let index = state.characters.index(id: id),
                       index >= state.characters.count - 5
                 else {
                     return .none
@@ -103,6 +113,10 @@ public struct CharactersList: Sendable {
                     )
                 }
                 .cancellable(id: CancelID.nextPage)
+            
+            case let .favoriteToggled(character):
+                state.$favoriteIDs.toggle(character.id)
+                return .none
             
             case .binding(\.searchText):
                 state.isLoadingNextPage = false

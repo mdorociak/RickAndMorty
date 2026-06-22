@@ -2,6 +2,7 @@
 import ComposableArchitecture
 import SwiftUI
 import Models
+import SharedUI
 
 public struct CharacterDetailsView: View {
     @Bindable var store: StoreOf<CharacterDetail>
@@ -14,6 +15,7 @@ public struct CharacterDetailsView: View {
         List {
             Section {
                 CharacterHeader(character: store.character)
+                    .listRowInsets(EdgeInsets())
             }
             
             Section("Info") {
@@ -65,6 +67,16 @@ public struct CharacterDetailsView: View {
                 }
         }
         .navigationTitle(store.character.name)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    store.send(.favoriteToggled)
+                } label: {
+                    Image(systemName: store.favoriteIDs.contains(store.character.id) ? "heart.fill" : "heart")
+                        .foregroundStyle(store.favoriteIDs.contains(store.character.id) ? .red : .secondary)
+                }
+            }
+        }
         .task {
             store.send(.onAppear)
         }
@@ -74,18 +86,14 @@ public struct CharacterDetailsView: View {
 struct CharacterHeader: View {
     let character: Character
     var body: some View {
-        VStack(spacing: 16) {
-            AsyncImage(url: character.imageURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                ProgressView()
-            }
-            .frame(width: 180, height: 180)
-            .clipShape(Circle())
+        AsyncImage(url: character.imageURL) { image in
+            image.resizable().scaledToFill()
+        } placeholder: {
+            ProgressView()
         }
         .frame(maxWidth: .infinity)
+        .frame(height: 280)
+        .clipped()
     }
 }
 
