@@ -97,14 +97,6 @@ let package = Package(
                 .defaultIsolation(nil)
             ]
         ),
-
-        .testTarget(
-            name: "RootTests",
-            dependencies: ["Root"],
-            swiftSettings: [
-                .defaultIsolation(nil)
-            ]
-        ),
         .testTarget(
             name: "CharactersListFeatureTests",
             dependencies: [
