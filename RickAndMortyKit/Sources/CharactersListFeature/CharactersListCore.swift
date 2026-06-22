@@ -17,8 +17,15 @@ public struct CharactersList: Sendable {
     @ObservableState
     public struct State: Equatable {
         var characters: IdentifiedArrayOf<Character> = []
+        var charactersByID: [Int: Character] = [:]
+        
+        
         var favoriteCharacters: IdentifiedArrayOf<Character> {
-            characters.filter { favoriteIDs.contains($0.id) }
+            IdentifiedArrayOf(
+                uniqueElements: favoriteIDs
+                    .compactMap { charactersByID[$0] }
+                    .sorted { $0.name < $1.name }
+            )
         }
         var otherCharacters: IdentifiedArrayOf<Character> {
             characters.filter { !favoriteIDs.contains($0.id) }
@@ -48,6 +55,7 @@ public struct CharactersList: Sendable {
         case path(StackActionOf<Path>)
         case characterTapped(Character)
         case favoriteToggled(Character)
+        case favoritesFetched(Result<[Character], Error>)
     }
     
     private enum CancelID { case search, nextPage }
@@ -62,21 +70,24 @@ public struct CharactersList: Sendable {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard state.loadingState == .idle else {
-                    return .none
-                }
-                
+                guard state.loadingState == .idle else { return .none }
                 state.loadingState = .loading
-                
-                return .run { send in
-                    await send(
-                        .charactersResponse(
-                            Result {
-                                try await apiClient.characters(page: 1, name: nil)
-                            }
-                        )
-                    )
-                }
+
+                let missingFavoriteIDs = state.favoriteIDs.filter { state.charactersByID[$0] == nil }
+
+                return .merge(
+                    .run { send in
+                        await send(.charactersResponse(Result {
+                            try await apiClient.characters(page: 1, name: nil)
+                        }))
+                    },
+                    .run { send in
+                        guard !missingFavoriteIDs.isEmpty else { return }
+                        await send(.favoritesFetched(Result {
+                            try await apiClient.charactersByIDs(ids: Array(missingFavoriteIDs))
+                        }))
+                    }
+                )
             case .refresh:
                 state.isLoadingNextPage = false
                 let query = state.searchText
@@ -140,15 +151,14 @@ public struct CharactersList: Sendable {
                 
             case let .charactersResponse(.success(page)):
                 state.characters = IdentifiedArrayOf(uniqueElements: page.results)
+                for character in page.results {
+                    state.charactersByID[character.id] = character
+                }
                 state.currentPage = 1
                 state.hasMorePages = page.info.next != nil
-                
-                if page.results.isEmpty {
-                    state.loadingState = .empty
-                } else {
-                    state.loadingState = .loaded
-                }
+                state.loadingState = page.results.isEmpty ? .empty : .loaded
                 return .none
+
             
             case let .charactersResponse(.failure(error)):
                 state.loadingState = .failed(error.localizedDescription)
@@ -156,6 +166,9 @@ public struct CharactersList: Sendable {
             
             case let .nextPageResponse(.success(page)):
                 state.characters.append(contentsOf: page.results)
+                for character in page.results {
+                    state.charactersByID[character.id] = character
+                }
                 state.currentPage += 1
                 state.hasMorePages = page.info.next != nil
                 state.isLoadingNextPage = false
@@ -165,6 +178,15 @@ public struct CharactersList: Sendable {
                 state.isLoadingNextPage = false
                 return .none
             
+            case let .favoritesFetched(.success(characters)):
+                for character in characters {
+                    state.charactersByID[character.id] = character
+                }
+                return .none
+
+            case .favoritesFetched(.failure):
+                return .none
+                
             case let .path(.element(id: _, action: .characterDetail(.delegate(.openEpisode(episode))))):
                 state.path.append(.episodeDetail(EpisodeDetail.State(episode: episode)))
                 return .none
