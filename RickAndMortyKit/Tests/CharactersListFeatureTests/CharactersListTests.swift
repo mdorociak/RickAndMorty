@@ -16,6 +16,7 @@ struct CharactersListTests {
         let store = TestStore(initialState: CharactersList.State()) {
             CharactersList()
         } withDependencies: {
+            $0.defaultFileStorage = .inMemory
             $0.apiClient.characters = { @Sendable _, _ in page }
         }
 
@@ -24,6 +25,7 @@ struct CharactersListTests {
         }
         await store.receive(\.charactersResponse.success) {
             $0.characters = [.mock(id: 1, name: "Rick")]
+            $0.charactersByID = [1: .mock(id: 1, name: "Rick")]
             $0.currentPage = 1
             $0.hasMorePages = false
             $0.loadingState = .loaded
@@ -93,6 +95,7 @@ struct CharactersListTests {
         await clock.advance(by: .milliseconds(300))
         await store.receive(\.charactersResponse.success) {
             $0.characters = [.mock(id: 5, name: "Morty")]
+            $0.charactersByID = [5: .mock(id: 5, name: "Morty")]
             $0.currentPage = 1
             $0.hasMorePages = false
             $0.loadingState = .loaded
@@ -128,6 +131,7 @@ struct CharactersListTests {
         await clock.advance(by: .milliseconds(300))
         await store.receive(\.charactersResponse.success) {
             $0.characters = [.mock(id: 1, name: "Rick")]
+            $0.charactersByID = [1: .mock(id: 1, name: "Rick")]
             $0.loadingState = .loaded
         }
         #expect(requests.value == ["rick"])
@@ -168,6 +172,7 @@ struct CharactersListTests {
         }
         await store.receive(\.nextPageResponse.success) {
             $0.characters.append(.mock(id: 2, name: "Morty"))
+            $0.charactersByID = [2: .mock(id: 2, name: "Morty")]
             $0.currentPage = 2
             $0.hasMorePages = false
             $0.isLoadingNextPage = false
